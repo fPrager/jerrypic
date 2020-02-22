@@ -34,7 +34,7 @@ for schedule in $SCHEDULE; do
 EOF
 	echo "	Starts at $STARTHOUR hours and $STARTMINUTE minutes"
 	echo "	Ends at $ENDHOUR hours and $ENDMINUTE minutes"
-	echo "	Interval is $INTERVAL minutes"
+	echo "	Interval is $INTERVAL seconds"
 
 	START=$(( 60*$STARTHOUR + $STARTMINUTE ))
 	END=$(( 60*$ENDHOUR + $ENDMINUTE ))

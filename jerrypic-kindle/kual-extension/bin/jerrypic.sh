@@ -1,6 +1,13 @@
 HOME=/mnt/us/extensions/jerrypic
 export LD_LIBRARY_PATH=${HOME}/lib
 
+# load configuration
+if [ -e "config.sh" ]; then
+	source config.sh
+else
+	TMPFILE=/tmp/tmp.jerrypic.png
+fi
+
 # load credentials
 if [ -e "credentials.sh" ]; then
 	source credentials.sh
@@ -21,15 +28,19 @@ if [ -z $KINDLE_ID ]; then
 	return
 fi
 
-TIME_STAMP_URL="${API_ROOT}${KINDLE_ID}%2F${TIMESTAMP_FILE}"
-IMAGE_URL="${API_ROOT}${KINDLE_ID}%2F${IMAGE_FILE_NAME}"
+TIMESTAMP_URL="${STORAGE_ROOT}${KINDLE_ID}%2F${TIMESTAMP_FILE}"
+IMAGE_URL="${STORAGE_ROOT}${KINDLE_ID}%2F${IMAGE_FILE}"
 
 readRemoteTimestamp () {
-	${HOME}/bin/wget -qO- "${TIME_STAMP_URL}"
+	${HOME}/bin/wget -qO- "${TIMESTAMP_URL}"
+}
+
+isValidTimestring () {
+	echo "$1 > 0" | ${HOME}/bin/bc -l
 }
 
 readLocalTimestamp () {
-	cat ${TIME_STAMP_FILE_NAME}
+	cat ${TIMESTAMP_FILE}
 }
 
 needsToUpdate () {
@@ -40,5 +51,5 @@ needsToUpdate () {
 
 storeTimestamp () {
     recent=$1
-    echo ${recent} > ${TIME_STAMP_FILE_NAME}
+    echo ${recent} > ${TIMESTAMP_FILE}
 }

@@ -21,7 +21,7 @@ if [ -e "config.sh" ]; then
 else
 	# set default values
 	INTERVAL=240
-	RTC=1
+	RTC=0
 fi
 
 # load utils
@@ -80,23 +80,23 @@ EOF
 
 # return number of minutes until next update
 get_time_to_next_update () {
-	CURRENTMINUTE=$(( 60*`date +%-H` + `date +%-M` ))
+	CURRENTSECOND=$(( 60*(60*`date +%-H` + `date +%-M`) + `date +%-S` ))
 
 	for schedule in $SCHEDULE; do
 		read STARTHOUR STARTMINUTE ENDHOUR ENDMINUTE INTERVAL << EOF
 			$( echo " $schedule" | sed -e 's/[:,=,\,,-]/ /g' -e 's/\([^0-9]\)0\([[:digit:]]\)/\1\2/g' )
 EOF
-		START=$(( 60*$STARTHOUR + $STARTMINUTE ))
-		END=$(( 60*$ENDHOUR + $ENDMINUTE ))
+		START=$(( 60*(60*$STARTHOUR + $STARTMINUTE) ))
+		END=$(( 60*(60*$ENDHOUR + $ENDMINUTE) ))
 
 		# ignore schedule entries that end prior to the current time
-		if [ $CURRENTMINUTE -gt $END ]; then
+		if [ $CURRENTSECOND -gt $END ]; then
 			continue
 
 		# if this schedule entry covers the current time, use it
-		elif [ $CURRENTMINUTE -ge $START ] && [ $CURRENTMINUTE -lt $END ]; then
-			logger "Schedule $schedule used, next update in $INTERVAL minutes"
-			NEXTUPDATE=$(( $CURRENTMINUTE + $INTERVAL))
+		elif [ $CURRENTSECOND -ge $START ] && [ $CURRENTSECOND -lt $END ]; then
+			logger "Schedule $schedule used, next update in $INTERVAL seconds"
+			NEXTUPDATE=$(( $CURRENTSECOND + $INTERVAL))
 
 		# if the next update falls into (or overlaps) a following schedule
 		# entry, apply this schedule entry instead if it would trigger earlier
@@ -106,8 +106,8 @@ EOF
 		fi
 	done
 
-	logger "Next update in $(( $NEXTUPDATE - $CURRENTMINUTE )) minutes"
-	echo $(( $NEXTUPDATE - $CURRENTMINUTE ))
+	logger "Next update in $(( $NEXTUPDATE - $CURRENTSECOND )) seconds"
+	echo $(( $NEXTUPDATE - $CURRENTSECOND ))
 }
 
 
@@ -121,5 +121,5 @@ while [ 1 -eq 1 ]; do
 	sh ./update.sh
 	
 	# wait for the next trigger time
-	wait_for $(( 60 * $(get_time_to_next_update) ))
+	wait_for $(( $(get_time_to_next_update) ))
 done
