@@ -45,7 +45,7 @@ SCREENSAVERFOLDER=/mnt/us/linkss/screensavers/
 SCREENSAVERFILE=$SCREENSAVERFOLDER/bg_medium_ss00.png
 
 # Whether to create log output (1) or not (0).
-LOGGING=1
+LOGGING=0
 
 # Where to log to - either /dev/stderr for console output, or an absolute
 # file path (beware that this may grow large over time!)

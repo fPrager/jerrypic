@@ -1,0 +1,20 @@
+{
+  "name": "convert-for-kual",
+  "version": "1.0.0",
+  "description": "lambda function to convert s3 images to images for kual jerry pic extension",
+  "main": "handler.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "lambda",
+    "kindle",
+    "images",
+    "greyscale",
+    "8bit",
+    "s3",
+    "event"
+  ],
+  "author": "fprager",
+  "license": "MIT"
+}
