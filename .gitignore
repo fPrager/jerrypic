@@ -65,5 +65,5 @@ typings/
 
 # kual files
 */kual-extension/**/credentials.sh
-*/kual-extension/**/temp/
+**/temp/
 
