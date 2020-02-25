@@ -1,0 +1,33 @@
+{
+  "name": "convert-for-kual",
+  "version": "1.0.0",
+  "description": "lambda function to convert s3 images to images for kual jerry pic extension",
+  "main": "handler.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "lambda",
+    "kindle",
+    "images",
+    "greyscale",
+    "8bit",
+    "s3",
+    "event"
+  ],
+  "author": "fprager",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^23.8.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "jest": "^25.1.0"
+  },
+  "dependencies": {
+    "jimp": "^0.9.3"
+  }
+}
