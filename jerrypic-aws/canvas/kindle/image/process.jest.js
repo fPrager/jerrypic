@@ -1,5 +1,5 @@
 const Jimp = require('jimp');
-const PNG = require('pngjs');
+const { PNG } = require('pngjs');
 const ImageMock = require('../../_mocks/jimp/image');
 
 const { processImage } = require('./process');
