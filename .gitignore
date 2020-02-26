@@ -66,5 +66,4 @@ typings/
 # kual files
 */kual-extension/**/credentials.sh
 **/temp/
-*/picsum.png
 
