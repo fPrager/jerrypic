@@ -4,7 +4,8 @@
   "description": "lambda function to convert s3 images to images for kual jerry pic extension",
   "main": "handler.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "watch:test": "jest --watch"
   },
   "keywords": [
     "lambda",
@@ -28,6 +29,7 @@
     "jest": "^25.1.0"
   },
   "dependencies": {
-    "jimp": "^0.9.3"
+    "jimp": "^0.9.3",
+    "pngjs": "^3.4.0"
   }
 }

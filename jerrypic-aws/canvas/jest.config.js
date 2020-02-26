@@ -14,6 +14,6 @@ module.exports = {
         './node_modules',
     ],
     moduleNameMapper: {
-        '^jimp': '<rootDir>/_mocks/jimp.js',
+        '^jimp': '<rootDir>/_mocks/jimp/jimp.js',
     },
 };
