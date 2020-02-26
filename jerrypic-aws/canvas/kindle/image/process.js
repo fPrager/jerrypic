@@ -1,5 +1,5 @@
 const Jimp = require('jimp');
-const PNG = require('pngjs');
+const { PNG } = require('pngjs');
 
 
 exports.processImage = async ({
@@ -17,7 +17,7 @@ exports.processImage = async ({
     if (brightness !== 0) image.brightness(brightness);
     image.greyscale();
 
-    const buffer = image.getBufferAsync(Jimp.MIME_PNG);
+    const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
     const pngWith8bit = PNG.sync.read(buffer);
     const options = {
         colorType: 0,
