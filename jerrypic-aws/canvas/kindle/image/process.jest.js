@@ -1,8 +1,8 @@
 const Jimp = require('jimp');
 const PNG = require('pngjs');
-const ImageMock = require('../_mocks/jimp/image');
+const ImageMock = require('../../_mocks/jimp/image');
 
-const { processImage } = require('./process-image');
+const { processImage } = require('./process');
 
 jest.mock('jimp');
 jest.mock('pngjs');
