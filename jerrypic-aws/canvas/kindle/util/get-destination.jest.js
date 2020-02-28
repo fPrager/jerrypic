@@ -1,19 +1,19 @@
-const getTargetData = require('./get-target-data');
+const getDestination = require('./get-destination');
 
 const validArgs = {
     srcBucket: 'my-bucket',
     srcKey: 'awesome/file/in/bucket.png',
 };
 
-describe('getTargetData({ srcBucket, srcKey })', () => {
+describe('getDestination({ srcBucket, srcKey })', () => {
     it('is a function', () => {
-        const actual = typeof getTargetData;
+        const actual = typeof getDestination;
         const expected = 'function';
         expect(actual).toEqual(expected);
     });
 
     it('returns \'dstBucket\' field same as \'srcBucket\'', () => {
-        const actual = getTargetData(validArgs).dstBucket;
+        const actual = getDestination(validArgs).dstBucket;
         const expected = 'my-bucket';
 
         expect(actual).toEqual(expected);
@@ -23,7 +23,7 @@ describe('getTargetData({ srcBucket, srcKey })', () => {
         const origEnv = process.env.KUAL_IMAGE_NAME;
         process.env.KUAL_IMAGE_NAME = 'blaaablaaablaaa.png';
 
-        const actual = getTargetData(validArgs).dstKey;
+        const actual = getDestination(validArgs).dstKey;
         const expected = 'awesome/file/in/blaaablaaablaaa.png';
 
         expect(actual).toEqual(expected);
@@ -31,12 +31,12 @@ describe('getTargetData({ srcBucket, srcKey })', () => {
         process.env.KUAL_IMAGE_NAME = origEnv;
     });
 
-    it(`returns 'dstKey' field as same location but 'image.png' if env 
-    'KUAL_IMAGE_NAME' is missing`, () => {
+    it(`returns 'dstKey' field as same location but 'image.png' as file name 
+        if env 'KUAL_IMAGE_NAME' is missing`, () => {
         const origEnv = process.env.KUAL_IMAGE_NAME;
         delete process.env.KUAL_IMAGE_NAME;
 
-        const actual = getTargetData(validArgs).dstKey;
+        const actual = getDestination(validArgs).dstKey;
         const expected = 'awesome/file/in/image.png';
 
         expect(actual).toEqual(expected);
