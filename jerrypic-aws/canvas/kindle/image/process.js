@@ -2,7 +2,7 @@ const Jimp = require('jimp');
 const { PNG } = require('pngjs');
 
 
-exports.processImage = async ({
+module.exports = async ({
     url,
     resX = 1280,
     resY = 800,
