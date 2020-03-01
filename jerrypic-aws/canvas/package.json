@@ -5,7 +5,10 @@
   "main": "handler.js",
   "scripts": {
     "test": "jest",
-    "watch:test": "jest --watch"
+    "watch:test": "jest --watch",
+    "invoke:local": "serverless invoke local -f convertForKual --path ./_mocks/s3/jerryPicEvent.json",
+    "deploy": "serverless deploy",
+    "undeploy": "serverless undeploy"
   },
   "keywords": [
     "lambda",

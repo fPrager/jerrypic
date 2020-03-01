@@ -67,3 +67,5 @@ typings/
 */kual-extension/**/credentials.sh
 **/temp/
 
+# serverless
+.serverless
