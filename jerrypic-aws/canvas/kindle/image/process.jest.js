@@ -8,7 +8,7 @@ jest.mock('jimp');
 jest.mock('pngjs');
 
 const validArgs = {
-    url: 'url/to/the/image',
+    data: 'url/to/the/image',
     resX: 200,
     resY: 200,
     contrast: 1,
@@ -16,7 +16,7 @@ const validArgs = {
 };
 
 
-describe('processImage({ url, resX=1280, resY=800, contrast=0, brightness=0 })', () => {
+describe('processImage({ data, resX=1280, resY=800, contrast=0, brightness=0 })', () => {
     beforeEach(() => {
         Jimp.read = async () => ImageMock;
         PNG.sync = {
@@ -39,13 +39,24 @@ describe('processImage({ url, resX=1280, resY=800, contrast=0, brightness=0 })',
         expect(actual).toEqual(expected);
     });
 
-    it('throws if url is not a string', async () => {
+    it('throws if data is not a string (url) or Buffer', async () => {
         await expect(
             processImage({
                 ...validArgs,
-                url: 2,
+                data: 2,
             }),
         ).rejects.toThrow();
+
+        await expect(
+            processImage(validArgs),
+        ).resolves.toBeDefined();
+
+        await expect(
+            processImage({
+                ...validArgs,
+                data: Buffer.from('whatwhat'),
+            }),
+        ).resolves.toBeDefined();
     });
 
     it('resolves with a buffer object', async () => {
@@ -54,10 +65,10 @@ describe('processImage({ url, resX=1280, resY=800, contrast=0, brightness=0 })',
         expect(Buffer.isBuffer(result)).toBeTruthy();
     });
 
-    it('reads image from \'url\' via jimp', async () => {
+    it('reads image from \'data\' via jimp', async () => {
         const mockedRead = jest.fn(
-            (url) => {
-                expect(url).toEqual(validArgs.url);
+            (data) => {
+                expect(data).toEqual(validArgs.data);
                 return Promise.resolve(ImageMock);
             },
         );
@@ -67,10 +78,10 @@ describe('processImage({ url, resX=1280, resY=800, contrast=0, brightness=0 })',
         expect(mockedRead).toHaveBeenCalled();
     });
 
-    it('resizes the image to \'resX\' or 1280 and \'resY\' or 800', async () => {
+    it('resizes the image to \'resX\' or 1024 and \'resY\' or 758', async () => {
         const mockedResize = jest.fn((resX, resY) => {
-            expect([validArgs.resX, 1280]).toContain(resX);
-            expect([validArgs.resY, 800]).toContain(resY);
+            expect([validArgs.resX, 1024]).toContain(resX);
+            expect([validArgs.resY, 758]).toContain(resY);
         });
         Jimp.read = async () => ({
             ...ImageMock,
@@ -126,6 +137,19 @@ describe('processImage({ url, resX=1280, resY=800, contrast=0, brightness=0 })',
         });
 
         expect(mockedBrightness).toHaveBeenCalledTimes(1);
+    });
+
+    it('rotates the image to -90 degree', async () => {
+        const mockedRotate = jest.fn((degree) => {
+            expect(degree).toEqual(-90);
+        });
+        Jimp.read = async () => ({
+            ...ImageMock,
+            rotate: mockedRotate,
+        });
+        await processImage(validArgs);
+
+        expect(mockedRotate).toHaveBeenCalledTimes(1);
     });
 
     it('makes greyscale image', async () => {

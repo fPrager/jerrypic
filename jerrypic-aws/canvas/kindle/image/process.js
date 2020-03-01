@@ -3,19 +3,23 @@ const { PNG } = require('pngjs');
 
 
 module.exports = async ({
-    url,
-    resX = 1280,
-    resY = 800,
+    data,
+    resX = 1024,
+    resY = 758,
     contrast = 0,
     brightness = 0,
 }) => {
-    if (typeof url !== 'string') { throw new Error('url must be a string'); }
+    if (
+        typeof data !== 'string'
+        && !Buffer.isBuffer(data)
+    ) { throw new Error('data must be a string or buffer'); }
 
-    const image = await Jimp.read(url);
+    const image = await Jimp.read(data);
     image.resize(resX, resY);
     if (contrast !== 0) image.contrast(contrast);
     if (brightness !== 0) image.brightness(brightness);
     image.greyscale();
+    image.rotate(-90);
 
     const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
     const pngWith8bit = PNG.sync.read(buffer);
