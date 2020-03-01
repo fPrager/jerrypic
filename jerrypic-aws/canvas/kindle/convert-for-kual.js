@@ -5,6 +5,7 @@ const getDataFromPutEvent = require('../s3/get-data-from-put-event');
 const processImage = require('./image/process');
 const getDestination = require('./util/get-destination');
 const downloadFile = require('../s3/download-file');
+const deleteFile = require('../s3/delete-file');
 const uploadFile = require('../s3/upload-file');
 
 module.exports = async (event, context, callback) => {
@@ -23,6 +24,8 @@ module.exports = async (event, context, callback) => {
     }
 
     const origData = await downloadFile({ bucket, key });
+    await deleteFile({ bucket, key });
+
     const processedData = await processImage({
         data: origData,
     });
