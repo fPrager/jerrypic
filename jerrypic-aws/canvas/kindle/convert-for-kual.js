@@ -42,5 +42,8 @@ module.exports = async (event, context, callback) => {
         acl: 'public-read',
     });
 
-    callback(`Successfully converted image for kual at ${timestamp}.`);
+    callback(null, {
+        statusCode: 200,
+        body: `Successfully converted image for kual at ${timestamp}.`,
+    });
 };
