@@ -31,13 +31,13 @@ describe('getDestination({ srcBucket, srcKey })', () => {
         process.env.KUAL_IMAGE_NAME = origEnv;
     });
 
-    it(`returns 'dstKey' field as same location but 'image.png' as file name 
+    it(`returns 'dstKey' field as same location but 'jerrypic' as file name 
         if env 'KUAL_IMAGE_NAME' is missing`, () => {
         const origEnv = process.env.KUAL_IMAGE_NAME;
         delete process.env.KUAL_IMAGE_NAME;
 
         const actual = getDestination(validArgs).dstKey;
-        const expected = 'awesome/file/in/image.png';
+        const expected = 'awesome/file/in/jerrypic';
 
         expect(actual).toEqual(expected);
 

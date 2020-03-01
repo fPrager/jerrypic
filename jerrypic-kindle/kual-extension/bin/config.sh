@@ -75,7 +75,7 @@ TIMESTAMP_FILE="timestamp"
 # downloaded if update of the screensaver is needed
 # remote address patter: [STORAGE_ROOT]/[KINDLE_ID]/[IMAGE_FILE]
 # add STORAGE_ROOT and KINDLE_ID in credentials.sh
-IMAGE_FILE="image.png"
+IMAGE_FILE="jerrypic"
 
 #############################################################################
 # Advanced
