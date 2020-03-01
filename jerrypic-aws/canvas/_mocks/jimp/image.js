@@ -3,5 +3,6 @@ module.exports = {
     contrast: () => {},
     brightness: () => {},
     greyscale: () => {},
+    rotate: () => {},
     getBufferAsync: async () => (Buffer.from('imagebuffer')),
 };
