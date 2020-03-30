@@ -3,24 +3,25 @@ const path = require('path');
 
 const getDataFromPutEvent = require('../s3/get-data-from-put-event');
 const processImage = require('./image/process');
-const getDestination = require('./util/get-destination');
+const getDestination = require('./location/get-destination');
 const downloadFile = require('../s3/download-file');
 const deleteFile = require('../s3/delete-file');
 const uploadFile = require('../s3/upload-file');
 
-module.exports = async (event, context, callback) => {
+module.exports = async (event) => {
     const { bucket, key } = getDataFromPutEvent(event);
     const { dstBucket, dstKey } = getDestination({ srcBucket: bucket, srcKey: key });
 
     if (bucket === dstBucket && key === dstKey) {
-        callback('Self Triggered Event');
-        return;
+        return {
+            statusCode: 200,
+            body: 'Self Triggered Event',
+        };
     }
 
     const extension = path.extname(key);
     if (extension !== '.jpg' && extension !== '.png') {
-        callback(`Unsupported image type: ${extension}`);
-        return;
+        return new Error(`Unsupported image type: ${extension}`);
     }
 
     const origData = await downloadFile({ bucket, key });
@@ -45,8 +46,8 @@ module.exports = async (event, context, callback) => {
         acl: 'public-read',
     });
 
-    callback(null, {
+    return {
         statusCode: 200,
         body: `Successfully converted image for kual at ${timestamp}.`,
-    });
+    };
 };

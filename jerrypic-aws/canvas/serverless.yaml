@@ -23,3 +23,8 @@ functions:
             - prefix: kual-assets/
             - suffix: .jpg
           existing: true
+  captureFromWebpage:
+    handler: index.captureFromWebpage
+    layers: 
+      - arn:aws:lambda:eu-central-1:212092276746:layer:aws-chrome-lambda:1
+  

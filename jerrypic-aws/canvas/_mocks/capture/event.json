@@ -1,0 +1,7 @@
+{
+    "body":{
+        "url":"https://google.com",
+        "dstBucket": "jerrypic",
+        "dstKey": "assets/test.png"
+    }
+}

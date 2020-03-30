@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "watch:test": "jest --watch",
-    "invoke:local": "serverless invoke local -f convertForKual --path ./_mocks/s3/jerryPicEvent.json",
+    "invoke:capture:local": "serverless invoke local -f captureFromWebpage --path ./_mocks/capture/event.json",
+    "invoke:kual:local": "serverless invoke local -f convertForKual --path ./_mocks/s3/jerryPicEvent.json",
     "deploy": "serverless deploy",
     "undeploy": "serverless undeploy"
   },
@@ -22,18 +23,17 @@
   "author": "fprager",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^6.1.0",
-    "eslint-config-airbnb": "^18.0.1",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jest": "^23.8.0",
-    "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.14.3",
-    "eslint-plugin-react-hooks": "^1.7.0",
-    "jest": "^25.1.0"
+    "aws-sdk": "^2.648.0",
+    "chrome-aws-lambda": "^2.1.1",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jest": "^23.8.2",
+    "jest": "^25.2.2",
+    "puppeteer-core": "^2.1.1"
   },
   "dependencies": {
-    "aws-sdk": "^2.626.0",
-    "jimp": "^0.9.3",
+    "jimp": "^0.9.6",
     "pngjs": "^3.4.0"
   }
 }
