@@ -69,6 +69,3 @@ typings/
 
 # serverless
 .serverless
-
-# chromium browser
-# headless_chromium

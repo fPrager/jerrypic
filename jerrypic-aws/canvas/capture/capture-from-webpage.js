@@ -11,8 +11,6 @@ module.exports = async (event) => {
         return new Error('Missing Request Body');
     }
 
-    console.log('fetch payload');
-
     const {
         url = isRequired('url', true),
         dstBucket = isRequired('dstBucket', true),
@@ -27,32 +25,13 @@ module.exports = async (event) => {
         return new Error('Missing Required Request Parameter');
     }
 
-    console.log('setup browser');
-
     const browser = await chromium.puppeteer.launch({
         ignoreHTTPSErrors: true,
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         headless: chromium.headless,
         executablePath: await chromium.executablePath,
-        /*
-        args: [
-            '--disable-dev-shm-usage',
-            '--no-zygote',
-            '--use-gl=swiftshader',
-            '--enable-webgl',
-            '--hide-scrollbars',
-            '--mute-audio',
-            '--no-sandbox',
-            '--single-process',
-            '--disable-breakpad',
-            '--ignore-gpu-blacklist',
-            '--headless',
-        ],
-        */
     });
-
-    console.log('visit page at', url);
 
     const page = await browser.newPage();
     await page.setViewport({ width, height });
@@ -65,17 +44,12 @@ module.exports = async (event) => {
         encoding: 'binary',
     });
 
-    console.log('upload file to', dstBucket, dstKey);
-    console.log(screenshotBuffer.byteLength);
-
     await uploadFile({
         key: dstKey,
         bucket: dstBucket,
         buffer: screenshotBuffer,
         acl: 'public-read',
     });
-
-    console.log('upload done');
 
     return {
         statusCode: 200,
