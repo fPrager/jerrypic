@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
-import { isValidSlug, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH } from './slug/index.js'
+import { generateSlug, isValidSlug, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH } from './slug/index.js'
 import { imageExists, loadImage, saveImage } from './storage/index.js'
 import renderYoursPage from './renderYoursPage.js'
 
@@ -34,8 +34,9 @@ const createApp = () => {
     next()
   }
 
+  // Landing: mint a fresh slug and forward to its upload page.
   app.get('/', (_req, res) => {
-    res.send('Hello from jerrypic-upload!\n')
+    res.redirect(`/yours/@${generateSlug()}`)
   })
 
   // Web frontend: the upload page for a slug, showing the current image if one exists.
