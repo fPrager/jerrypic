@@ -1,12 +1,7 @@
-import express from 'express'
+import createApp from './createApp.js'
 
-const app = express()
 const port = Number(process.env.PORT) || 3000
 
-app.get('/', (_req, res) => {
-  res.send('Hello from jerrypic-upload!\n')
-})
-
-app.listen(port, () => {
+createApp().listen(port, () => {
   console.log(`jerrypic-upload listening on :${port}`)
 })
