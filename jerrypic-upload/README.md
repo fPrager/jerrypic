@@ -35,23 +35,27 @@ download from that slot.
 
 ## Routes
 
-| Method | Path                | Purpose                                                                 |
-|--------|---------------------|-------------------------------------------------------------------------|
-| `GET`  | `/yours/@:slug`     | Human-facing HTML page with an upload form; previews the current image. |
-| `POST` | `/yours/@:slug`     | Store an image for this slug. Latest upload overwrites the previous.    |
-| `GET`  | `/mine/@:slug`      | Return the stored image as-is (the URL the Kindle fetches). 404 if none.|
+| Method | Path            | Purpose                                                                  |
+| ------ | --------------- | ------------------------------------------------------------------------ |
+| `GET`  | `/yours/@:slug` | Human-facing HTML page with an upload form; previews the current image.  |
+| `POST` | `/yours/@:slug` | Store an image for this slug. Latest upload overwrites the previous.     |
+| `GET`  | `/mine/@:slug`  | Return the stored image as-is (the URL the Kindle fetches). 404 if none. |
 
 ### Upload (`POST /yours/@:slug`)
+
 Accepts **either**:
+
 - a multipart form upload (field name `image`) — used by the HTML form, or
 - a raw `image/*` request body — used by a web service pushing bytes directly.
 
 ### Slugs
+
 - Pattern: `[A-Za-z0-9_-]`, 10–64 chars.
 - **Created implicitly on first use** — any valid slug works; it "exists" once
   an image has been posted to it. No registration step.
 
 ### Auth
+
 - **Open** — no auth. The slug itself is the secret. Suitable for a hobby setup.
 
 ---
@@ -69,11 +73,11 @@ Accepts **either**:
 
 ## Configuration
 
-| Variable    | Default | Description                          |
-|-------------|---------|--------------------------------------|
-| `PORT`      | `3000`  | Port the Express server listens on.  |
-| `DATA_DIR`  | `/data` | Directory where images are stored.   |
-| `MAX_BYTES` | `26214400` (25 MB) | Max accepted upload size. |
+| Variable    | Default            | Description                         |
+| ----------- | ------------------ | ----------------------------------- |
+| `PORT`      | `3000`             | Port the Express server listens on. |
+| `DATA_DIR`  | `/data`            | Directory where images are stored.  |
+| `MAX_BYTES` | `26214400` (25 MB) | Max accepted upload size.           |
 
 No database and no external credentials are required.
 
@@ -81,14 +85,14 @@ No database and no external credentials are required.
 
 ## Tech stack
 
-| Component   | Choice                          |
-|-------------|---------------------------------|
-| Runtime     | Node.js 20 (`node:20-alpine`)   |
-| Framework   | Express 4                       |
-| Uploads     | Multer (multipart) + raw body   |
-| Storage     | Mounted Docker volume on disk   |
-| Container   | Docker + Docker Compose         |
-| Reverse proxy | Caddy (from the hosting stack)|
+| Component     | Choice                         |
+| ------------- | ------------------------------ |
+| Runtime       | Node.js 20 (`node:20-alpine`)  |
+| Framework     | Express 4                      |
+| Uploads       | Multer (multipart) + raw body  |
+| Storage       | Mounted Docker volume on disk  |
+| Container     | Docker + Docker Compose        |
+| Reverse proxy | Caddy (from the hosting stack) |
 
 ---
 
