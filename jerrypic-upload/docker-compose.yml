@@ -1,0 +1,20 @@
+services:
+  jerrypic-upload:
+    build: .
+    container_name: jerrypic-upload
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATA_DIR: /data
+    volumes:
+      - jerrypic_upload_data:/data
+    networks:
+      - hosting_shared
+
+networks:
+  hosting_shared:
+    # Attach to the shared infra network — do not recreate it.
+    external: true
+
+volumes:
+  jerrypic_upload_data:

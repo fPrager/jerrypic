@@ -1,0 +1,8 @@
+node_modules
+dist
+data
+.yarn
+.git
+.env
+*.log
+README.md
