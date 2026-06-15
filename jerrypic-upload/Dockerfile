@@ -26,5 +26,6 @@ ENV DATA_DIR=/data
 COPY package.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY public ./public
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
