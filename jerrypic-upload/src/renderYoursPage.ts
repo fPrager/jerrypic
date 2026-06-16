@@ -11,6 +11,16 @@ const imageSection = ({ slug, downloadUrl }: { slug: string; downloadUrl: string
         <img src="/mine/@${slug}" alt="Your uploaded Jerry pic" />
       </figure>
       <section class="download">
+        <p class="download__label">Image download URL</p>
+        <a class="download__url" href="${downloadUrl}">${downloadUrl}</a>
+      </section>`
+
+
+const imageSectionKindle = ({ slug, downloadUrl }: { slug: string; downloadUrl: string }): string => `
+      <figure class="preview">
+        <img src="/mine/@${slug}/kindle" alt="Your uploaded Jerry pic" />
+      </figure>
+      <section class="download">
         <p class="download__label">Kindle download URL</p>
         <a class="download__url" href="${downloadUrl}">${downloadUrl}</a>
       </section>`
@@ -148,6 +158,7 @@ const renderYoursPage = ({ slug, hasImage, downloadUrl }: RenderYoursPageInput):
 
       <p class="status" id="status"></p>
       ${hasImage ? imageSection({ slug, downloadUrl }) : ''}
+      ${hasImage ? imageSectionKindle({ slug, downloadUrl }) : ''}
     </main>
     <script src="/app.js"></script>
   </body>

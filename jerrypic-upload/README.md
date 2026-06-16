@@ -40,6 +40,7 @@ download from that slot.
 | `GET`  | `/yours/@:slug` | Human-facing HTML page with an upload form; previews the current image.  |
 | `POST` | `/yours/@:slug` | Store an image for this slug. Latest upload overwrites the previous.     |
 | `GET`  | `/mine/@:slug`  | Return the stored image as-is (the URL the Kindle fetches). 404 if none. |
+| `GET`  | `/mine/@:slug/kindle` | Return the stored image converted to the Kindle JPEG (758×1024, portrait). 404 if none. |
 
 ### Upload (`POST /yours/@:slug`)
 
@@ -68,6 +69,11 @@ Accepts **either**:
 - `/mine/@:slug` serves the **raw, as-uploaded** bytes — no Kindle-side
   conversion (grayscale/resize) is done here. The uploader is responsible for
   providing a Kindle-friendly format if needed.
+- `/mine/@:slug/kindle` serves the same image **converted on the fly** to the
+  JPEG the device expects: resized to 1024×758 and rotated -90° so it lands
+  portrait (758×1024), matching the AWS `convert-for-kual` pipeline. The Kindle's
+  `grayscale_jpeg_decode` tool reads the JPEG luminance plane, so the screen
+  renders grayscale. Conversion is done per request (the raw upload is unchanged).
 
 ---
 

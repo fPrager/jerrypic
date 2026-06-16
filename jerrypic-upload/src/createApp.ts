@@ -4,6 +4,7 @@ import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
 import { generateSlug, isValidSlug, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH } from './slug/index.js'
 import { imageExists, loadImage, saveImage } from './storage/index.js'
+import { convertToKindleJpeg } from './kindle/index.js'
 import renderYoursPage from './renderYoursPage.js'
 
 const MAX_BYTES = Number(process.env.MAX_BYTES) || 26214400
@@ -71,6 +72,20 @@ const createApp = () => {
     // Never cache, so the frontend preview and the Kindle always get the latest upload.
     res.set('Cache-Control', 'no-store')
     res.type(image.contentType).send(image.data)
+  })
+
+  // Kindle-ready variant of /mine: the stored image converted on the fly to the
+  // grayscale JPEG at the resolution the device expects (see ./kindle).
+  app.get('/mine/@:slug/kindle', requireValidSlug, async (req, res) => {
+    const image = await loadImage(first(req.params.slug) as string)
+    if (!image) {
+      res.status(404).json({ error: 'no image uploaded for this slug yet' })
+      return
+    }
+
+    const kindleJpeg = await convertToKindleJpeg(image.data)
+    res.set('Cache-Control', 'no-store')
+    res.type('image/jpeg').send(kindleJpeg)
   })
 
   return app
