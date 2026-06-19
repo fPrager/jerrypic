@@ -43,8 +43,10 @@ const createApp = () => {
   // Web frontend: the upload page for a slug, showing the current image if one exists.
   app.get('/yours/@:slug', requireValidSlug, async (req, res) => {
     const slug = first(req.params.slug) as string
-    const downloadUrl = `${req.protocol}://${req.get('host')}/mine/@${slug}`
-    res.type('html').send(renderYoursPage({ slug, hasImage: await imageExists(slug), downloadUrl }))
+    const origin = `${req.protocol}://${req.get('host')}`
+    const downloadUrl = `${origin}/mine/@${slug}`
+    const uploadUrl = `${origin}/yours/@${slug}`
+    res.type('html').send(renderYoursPage({ slug, hasImage: await imageExists(slug), downloadUrl, uploadUrl }))
   })
 
   // Upload (or replace) the image for a slug. Body is the raw image bytes.
