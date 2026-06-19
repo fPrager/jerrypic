@@ -83,9 +83,19 @@ const createApp = () => {
       return
     }
 
-    const kindleJpeg = await convertToKindleJpeg(image.data)
-    res.set('Cache-Control', 'no-store')
-    res.type('image/jpeg').send(kindleJpeg)
+    // Jimp can only decode JPEG/PNG/BMP/GIF/TIFF — an unsupported upload (e.g. a
+    // phone HEIC/WebP) throws here. Surface a clear error instead of a silent 500.
+    try {
+      const kindleJpeg = await convertToKindleJpeg(image.data)
+      res.set('Cache-Control', 'no-store')
+      res.type('image/jpeg').send(kindleJpeg)
+    } catch (error) {
+      console.error(`kindle conversion failed for @${first(req.params.slug)} (${image.contentType}):`, error)
+      res.status(415).json({
+        error: 'could not convert this image for the Kindle — upload a JPEG or PNG',
+        contentType: image.contentType,
+      })
+    }
   })
 
   // SHA-256 of the currently stored image bytes, as plain hex. Precomputed at
