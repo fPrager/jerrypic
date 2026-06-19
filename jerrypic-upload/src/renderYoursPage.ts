@@ -22,7 +22,7 @@ const imageSectionKindle = ({ slug, downloadUrl }: { slug: string; downloadUrl: 
       </figure>
       <section class="download">
         <p class="download__label">Kindle download URL</p>
-        <a class="download__url" href="${downloadUrl}">${downloadUrl}/kindle</a>
+        <a class="download__url" href="${downloadUrl}/kindle">${downloadUrl}/kindle</a>
       </section>`
 
 /** Render the /yours/@:slug upload page (headline, dropzone, and any existing image). */
