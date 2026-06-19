@@ -110,20 +110,20 @@ const renderYoursPage = ({ slug, hasImage, downloadUrl, uploadUrl }: RenderYours
 
       .headline {
         margin: 0 0 1.75rem;
-        line-height: 0.9;
+        line-height: 0.95;
         font-weight: 400;
       }
+      .headline .line { display: block; }
       .headline .caps {
         font-family: 'Marker', sans-serif;
         font-size: clamp(2.4rem, 9vw, 4.2rem);
-        display: block;
+        vertical-align: baseline;
       }
       .headline .script {
         font-family: 'Brush', cursive;
         font-size: clamp(3rem, 11vw, 5.4rem);
-        display: block;
         color: #c0562b;
-        margin-top: -0.05em;
+        vertical-align: baseline;
       }
 
       /* Two panels with the arrow between them. */
@@ -301,10 +301,8 @@ const renderYoursPage = ({ slug, hasImage, downloadUrl, uploadUrl }: RenderYours
   <body data-slug="${slug}">
     <main>
       <h1 class="headline">
-        <span class="caps">Upload</span>
-        <span class="script">your</span>
-        <span class="caps">Jerry</span>
-        <span class="script">pic</span>
+        <span class="line"><span class="caps">Upload</span> <span class="script">your</span></span>
+        <span class="line"><span class="caps">Jerry</span> <span class="script">pic</span></span>
       </h1>
 
       <div class="stage">
