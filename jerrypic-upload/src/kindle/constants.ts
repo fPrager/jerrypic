@@ -1,5 +1,5 @@
 export const KINDLE_WIDTH = 1448
-export const KINDLE_HEIGHT = 1072
+export const KINDLE_HEIGHT = 1088
 
 export const KINDLE_ROTATION = -90
 
