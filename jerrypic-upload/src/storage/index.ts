@@ -1,4 +1,5 @@
 export { default as saveImage } from './saveImage.js'
 export { default as loadImage } from './loadImage.js'
+export { default as getImageHash } from './getImageHash.js'
 export { default as imageExists } from './imageExists.js'
 export type { StoredImage } from './loadImage.js'

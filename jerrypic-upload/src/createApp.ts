@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
 import { generateSlug, isValidSlug, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH } from './slug/index.js'
-import { imageExists, loadImage, saveImage } from './storage/index.js'
+import { getImageHash, imageExists, loadImage, saveImage } from './storage/index.js'
 import { convertToKindleJpeg } from './kindle/index.js'
 import renderYoursPage from './renderYoursPage.js'
 
@@ -86,6 +86,20 @@ const createApp = () => {
     const kindleJpeg = await convertToKindleJpeg(image.data)
     res.set('Cache-Control', 'no-store')
     res.type('image/jpeg').send(kindleJpeg)
+  })
+
+  // SHA-256 of the currently stored image bytes, as plain hex. Precomputed at
+  // upload time, so this poll-friendly route reads only the tiny sidecar — the
+  // Kindle can ping it cheaply to check whether the image changed.
+  app.get('/mine/@:slug/hash', requireValidSlug, async (req, res) => {
+    const hash = await getImageHash(first(req.params.slug) as string)
+    if (!hash) {
+      res.status(404).json({ error: 'no image uploaded for this slug yet' })
+      return
+    }
+
+    res.set('Cache-Control', 'no-store')
+    res.type('text/plain').send(hash)
   })
 
   return app

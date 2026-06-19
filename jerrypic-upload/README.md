@@ -40,7 +40,8 @@ download from that slot.
 | `GET`  | `/yours/@:slug` | Human-facing HTML page with an upload form; previews the current image.  |
 | `POST` | `/yours/@:slug` | Store an image for this slug. Latest upload overwrites the previous.     |
 | `GET`  | `/mine/@:slug`  | Return the stored image as-is (the URL the Kindle fetches). 404 if none. |
-| `GET`  | `/mine/@:slug/kindle` | Return the stored image converted to the Kindle JPEG (758×1024, portrait). 404 if none. |
+| `GET`  | `/mine/@:slug/kindle` | Return the stored image converted to the Kindle JPEG (portrait). 404 if none. |
+| `GET`  | `/mine/@:slug/hash` | Return the SHA-256 of the stored image bytes as plain hex. 404 if none. |
 
 ### Upload (`POST /yours/@:slug`)
 
@@ -74,6 +75,8 @@ Accepts **either**:
   portrait (758×1024), matching the AWS `convert-for-kual` pipeline. The Kindle's
   `grayscale_jpeg_decode` tool reads the JPEG luminance plane, so the screen
   renders grayscale. Conversion is done per request (the raw upload is unchanged).
+- `/mine/@:slug/hash` serves the **SHA-256** of the stored bytes as plain hex, so
+  the Kindle can poll cheaply and skip re-downloading when the image is unchanged.
 
 ---
 
