@@ -224,11 +224,6 @@ const renderYoursPage = ({
         margin: 0 auto;
         border-radius: 10px;
       }
-      /* Show the Kindle preview the way the e-ink screen renders it. */
-      .preview--kindle img {
-        filter: grayscale(1) contrast(1.05);
-        background: #fff;
-      }
 
       .placeholder {
         display: flex;
