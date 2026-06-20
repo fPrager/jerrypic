@@ -99,7 +99,7 @@ const renderYoursPage = ({
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Upload your Jerry pic</title>
+    <title>Jerry pic</title>
     <style>
       @font-face {
         font-family: 'Marker';
@@ -371,7 +371,6 @@ const renderYoursPage = ({
   <body data-slug="${slug}">
     <main>
       <h1 class="headline">
-        <span class="line"><span class="caps">Upload</span> <span class="script">your</span></span>
         <span class="line"><span class="caps">Jerry</span> <span class="script">pic</span></span>
       </h1>
 
