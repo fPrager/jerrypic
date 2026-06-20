@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url'
 import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
 import { generateSlug, isValidSlug, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH } from './slug/index.js'
-import { getOutputHash, imageExists, loadImage, loadPipeline, saveImage, savePipeline } from './storage/index.js'
-import { applyPipeline } from './pipeline/index.js'
+import { getOutputHash, imageExists, loadImage, loadMeta, loadPipeline, saveImage, savePipeline } from './storage/index.js'
+import { applyPipeline, getCatalog } from './pipeline/index.js'
 import renderYoursPage from './renderYoursPage.js'
 
 const MAX_BYTES = Number(process.env.MAX_BYTES) || 26214400
@@ -45,12 +45,17 @@ const createApp = () => {
   app.get('/yours/@:slug', requireValidSlug, async (req, res) => {
     const slug = first(req.params.slug) as string
     const origin = `${req.protocol}://${req.get('host')}`
+    const [hasImage, meta, pipeline] = await Promise.all([imageExists(slug), loadMeta(slug), loadPipeline(slug)])
     res.type('html').send(
       renderYoursPage({
         slug,
-        hasImage: await imageExists(slug),
+        hasImage,
         rawUrl: `${origin}/yours/@${slug}/raw`,
         outputUrl: `${origin}/mine/@${slug}`,
+        pipeline,
+        catalog: getCatalog(),
+        rawWidth: meta?.width,
+        rawHeight: meta?.height,
       }),
     )
   })

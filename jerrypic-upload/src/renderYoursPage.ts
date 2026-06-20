@@ -1,8 +1,14 @@
+import type { CatalogStep, Step } from './pipeline/index.js'
+
 type RenderYoursPageInput = {
   slug: string
   hasImage: boolean
   rawUrl: string
   outputUrl: string
+  pipeline: Step[]
+  catalog: CatalogStep[]
+  rawWidth?: number
+  rawHeight?: number
 }
 
 // A single route row: a method badge, the URL, and a short explanation.
@@ -47,7 +53,7 @@ const outputPanel = ({ hasImage, outputUrl }: { hasImage: boolean; outputUrl: st
 
         ${
           hasImage
-            ? `<figure class="preview"><img src="${outputUrl}" alt="Processed output" /></figure>`
+            ? `<figure class="preview"><img id="output-img" src="${outputUrl}" alt="Processed output" /></figure>`
             : `<div class="placeholder">Upload to preview</div>`
         }
 
@@ -57,20 +63,37 @@ const outputPanel = ({ hasImage, outputUrl }: { hasImage: boolean; outputUrl: st
         </div>
       </section>`
 
-// The hand-drawn arrow between the two panels (turns to point down on narrow screens).
-const flowArrow = (): string => `
-      <div class="flow" aria-hidden="true">
-        <span class="flow__label">converts to</span>
-        <div class="flow__arrow">
-          <svg viewBox="0 0 96 40" fill="none" stroke="#c0562b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 21 C 30 14, 54 28, 80 20" />
-            <path d="M66 11 L82 20 L66 29" />
-          </svg>
+// The pipeline editor between the panels: an arrow in from the top, the step
+// cards (filled in by app.js), an add control, and an arrow out to the right.
+const arrowDown = `<svg class="flow__svg flow__svg--down" viewBox="0 0 40 44" fill="none" stroke="#c0562b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4 V34" /><path d="M9 25 L20 36 L31 25" /></svg>`
+const arrowRight = `<svg class="flow__svg flow__svg--right" viewBox="0 0 56 40" fill="none" stroke="#c0562b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 H46" /><path d="M35 9 L48 20 L35 31" /></svg>`
+
+const pipeEditor = (): string => `
+      <div class="flow">
+        <div class="flow__arrow flow__arrow--in" aria-hidden="true">${arrowDown}</div>
+        <div class="pipe" id="pipe"></div>
+        <div class="pipe__add">
+          <select class="pipe__select" id="add-step" aria-label="Add a step"></select>
+          <button class="pipe__addbtn" id="add-step-btn" type="button">+ add</button>
         </div>
+        <p class="pipe__status" id="pipe-status" aria-live="polite"></p>
+        <div class="flow__arrow flow__arrow--out" aria-hidden="true">${arrowRight}</div>
       </div>`
 
-/** Render the /yours/@:slug upload page: a source panel, an arrow, and the output panel. */
-const renderYoursPage = ({ slug, hasImage, rawUrl, outputUrl }: RenderYoursPageInput): string => `<!doctype html>
+// Serialize the editor state for the client. Escape "<" so the JSON can't break out of the script tag.
+const serializeState = (state: unknown): string => JSON.stringify(state).replace(/</g, '\\u003c')
+
+/** Render the /yours/@:slug page: source panel, pipeline editor, and output panel. */
+const renderYoursPage = ({
+  slug,
+  hasImage,
+  rawUrl,
+  outputUrl,
+  pipeline,
+  catalog,
+  rawWidth,
+  rawHeight,
+}: RenderYoursPageInput): string => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -104,7 +127,7 @@ const renderYoursPage = ({ slug, hasImage, rawUrl, outputUrl }: RenderYoursPageI
 
       main {
         width: 100%;
-        max-width: 1000px;
+        max-width: 1180px;
         text-align: center;
       }
 
@@ -263,38 +286,86 @@ const renderYoursPage = ({ slug, hasImage, rawUrl, outputUrl }: RenderYoursPageI
         color: #8a8170;
       }
 
-      /* The arrow between the panels. */
+      /* The pipeline editor column between the panels. */
       .flow {
-        flex: none;
-        align-self: center;
+        flex: 0 0 320px;
+        align-self: stretch;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 0.4rem;
+        gap: 0.6rem;
       }
-      .flow__label {
-        font-family: 'Brush', cursive;
-        font-size: 1.2rem;
-        color: #8a8170;
+      .flow__arrow { display: flex; justify-content: center; }
+      .flow__svg { width: 40px; height: auto; display: block; }
+      .flow__svg--right { width: 52px; }
+
+      .pipe { display: flex; flex-direction: column; gap: 0.5rem; }
+      .step {
+        background: #fbf8f1;
+        border: 1px solid #e7ddc8;
+        border-radius: 12px;
+        padding: 0.55rem 0.65rem;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
       }
-      .flow__arrow {
-        width: 96px;
-        animation: nudge 1.8s ease-in-out infinite;
+      .step--target { border-color: #e0b9a6; background: #fdf4ee; }
+      .step__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+      .step__name { font-family: 'Brush', cursive; font-size: 1.2rem; }
+      .step__ctrls { display: flex; gap: 0.2rem; }
+      .step__ctrls button {
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0;
+        border: 1px solid #d8cdb5;
+        border-radius: 6px;
+        background: #fff;
+        color: #6b6457;
+        font-size: 0.8rem;
+        line-height: 1;
+        cursor: pointer;
       }
-      .flow__arrow svg { width: 100%; height: auto; display: block; }
-      @keyframes nudge {
-        0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(6px); }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .flow__arrow { animation: none; }
+      .step__ctrls button:hover:not(:disabled) { border-color: #c0562b; color: #c0562b; }
+      .step__ctrls button:disabled { opacity: 0.35; cursor: default; }
+      .step__params { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+      .param { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.68rem; color: #8a8170; }
+      .param--check { flex-direction: row; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: #2b2b2b; }
+      .param input[type='number'],
+      .param select {
+        width: 5.5rem;
+        padding: 0.2rem 0.3rem;
+        border: 1px solid #d8cdb5;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 0.8rem;
       }
 
-      /* Stack vertically on narrow screens; arrow points down. */
+      .pipe__add { display: flex; gap: 0.4rem; }
+      .pipe__select {
+        flex: 1;
+        min-width: 0;
+        padding: 0.3rem;
+        border: 1px solid #d8cdb5;
+        border-radius: 8px;
+        background: #fff;
+        font-size: 0.82rem;
+      }
+      .pipe__addbtn {
+        flex: none;
+        border: none;
+        border-radius: 8px;
+        padding: 0.3rem 0.7rem;
+        background: #c0562b;
+        color: #fff;
+        font-family: 'Marker', sans-serif;
+        font-size: 0.85rem;
+        cursor: pointer;
+      }
+      .pipe__addbtn:hover { background: #a8491f; }
+      .pipe__status { margin: 0; min-height: 1rem; text-align: center; font-size: 0.72rem; color: #8a8170; }
+
+      /* Stack vertically on narrow screens; the output arrow then points down. */
       @media (max-width: 820px) {
         .stage { flex-direction: column; align-items: stretch; }
-        .flow__arrow { animation: none; }
-        .flow__arrow svg { transform: rotate(90deg); }
+        .flow { flex-basis: auto; }
+        .flow__svg--right { transform: rotate(90deg); }
       }
     </style>
   </head>
@@ -307,10 +378,17 @@ const renderYoursPage = ({ slug, hasImage, rawUrl, outputUrl }: RenderYoursPageI
 
       <div class="stage">
         ${sourcePanel({ hasImage, rawUrl })}
-        ${flowArrow()}
+        ${pipeEditor()}
         ${outputPanel({ hasImage, outputUrl })}
       </div>
     </main>
+    <script id="pipeline-state" type="application/json">${serializeState({
+      slug,
+      outputUrl,
+      pipeline,
+      catalog,
+      rawSize: { width: rawWidth ?? null, height: rawHeight ?? null },
+    })}</script>
     <script src="/app.js"></script>
   </body>
 </html>`
