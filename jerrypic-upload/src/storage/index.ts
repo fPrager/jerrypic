@@ -1,6 +1,7 @@
 export { default as saveImage } from './saveImage.js'
 export { default as loadImage } from './loadImage.js'
 export { default as getImageHash } from './getImageHash.js'
+export { default as getOutputHash } from './getOutputHash.js'
 export { default as imageExists } from './imageExists.js'
 export { default as loadMeta } from './loadMeta.js'
 export { default as loadPipeline } from './loadPipeline.js'

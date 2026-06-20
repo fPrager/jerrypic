@@ -19,7 +19,7 @@ const upload = async (file) => {
 
   setStatus('Uploading…')
   try {
-    const response = await fetch(`/yours/@${slug}`, {
+    const response = await fetch(`/yours/@${slug}/raw`, {
       method: 'POST',
       headers: { 'Content-Type': file.type },
       body: file,

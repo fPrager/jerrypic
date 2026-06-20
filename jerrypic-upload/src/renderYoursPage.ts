@@ -1,8 +1,8 @@
 type RenderYoursPageInput = {
   slug: string
   hasImage: boolean
-  downloadUrl: string
-  uploadUrl: string
+  rawUrl: string
+  outputUrl: string
 }
 
 // A single route row: a method badge, the URL, and a short explanation.
@@ -15,15 +15,15 @@ const routeRow = ({ method, url, hint }: { method: string; url: string; hint: st
           <p class="route__hint">${hint}</p>
         </div>`
 
-// Left side: the source image you control — drop a photo, see it, and the POST
-// route that replaces it.
-const sourcePanel = ({ slug, hasImage, uploadUrl }: { slug: string; hasImage: boolean; uploadUrl: string }): string => `
+// Left side: the raw source image you control — drop a photo, see it, and the
+// POST route that replaces it.
+const sourcePanel = ({ hasImage, rawUrl }: { hasImage: boolean; rawUrl: string }): string => `
       <section class="panel">
         <h2 class="panel__title">Yours</h2>
 
         ${
           hasImage
-            ? `<figure class="preview"><img src="/mine/@${slug}" alt="Your uploaded picture" /></figure>`
+            ? `<figure class="preview"><img src="${rawUrl}" alt="Your uploaded picture" /></figure>`
             : `<div class="placeholder">No picture yet</div>`
         }
 
@@ -35,25 +35,25 @@ const sourcePanel = ({ slug, hasImage, uploadUrl }: { slug: string; hasImage: bo
         <p class="status" id="status"></p>
 
         <div class="routes">
-          ${routeRow({ method: 'POST', url: uploadUrl, hint: 'Send raw image bytes here to set or replace the picture.' })}
+          ${routeRow({ method: 'POST', url: rawUrl, hint: 'Send raw image bytes here to set or replace the source picture.' })}
         </div>
       </section>`
 
-// Right side: what the Kindle gets — the converted preview plus the GET routes
-// the device uses to download and to poll for changes.
-const kindlePanel = ({ slug, hasImage, downloadUrl }: { slug: string; hasImage: boolean; downloadUrl: string }): string => `
+// Right side: the pipeline output — the processed preview plus the GET routes the
+// Kindle uses to download and to poll for changes.
+const outputPanel = ({ hasImage, outputUrl }: { hasImage: boolean; outputUrl: string }): string => `
       <section class="panel">
         <h2 class="panel__title">Mine</h2>
 
         ${
           hasImage
-            ? `<figure class="preview preview--kindle"><img src="/mine/@${slug}/kindle" alt="Kindle version" /></figure>`
+            ? `<figure class="preview"><img src="${outputUrl}" alt="Processed output" /></figure>`
             : `<div class="placeholder">Upload to preview</div>`
         }
 
         <div class="routes">
-          ${routeRow({ method: 'GET', url: `${downloadUrl}/kindle`, hint: 'Grayscale JPEG at the device resolution — what the Kindle downloads.' })}
-          ${routeRow({ method: 'GET', url: `${downloadUrl}/hash`, hint: 'SHA-256 of the current image. Poll it to detect changes cheaply.' })}
+          ${routeRow({ method: 'GET', url: outputUrl, hint: 'The processed image — what the Kindle downloads.' })}
+          ${routeRow({ method: 'GET', url: `${outputUrl}/hash`, hint: 'SHA-256 of the output (image + pipeline). Poll it to detect changes cheaply.' })}
         </div>
       </section>`
 
@@ -69,8 +69,8 @@ const flowArrow = (): string => `
         </div>
       </div>`
 
-/** Render the /yours/@:slug upload page: a source panel, an arrow, and the Kindle panel. */
-const renderYoursPage = ({ slug, hasImage, downloadUrl, uploadUrl }: RenderYoursPageInput): string => `<!doctype html>
+/** Render the /yours/@:slug upload page: a source panel, an arrow, and the output panel. */
+const renderYoursPage = ({ slug, hasImage, rawUrl, outputUrl }: RenderYoursPageInput): string => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -306,9 +306,9 @@ const renderYoursPage = ({ slug, hasImage, downloadUrl, uploadUrl }: RenderYours
       </h1>
 
       <div class="stage">
-        ${sourcePanel({ slug, hasImage, uploadUrl })}
+        ${sourcePanel({ hasImage, rawUrl })}
         ${flowArrow()}
-        ${kindlePanel({ slug, hasImage, downloadUrl })}
+        ${outputPanel({ hasImage, outputUrl })}
       </div>
     </main>
     <script src="/app.js"></script>
