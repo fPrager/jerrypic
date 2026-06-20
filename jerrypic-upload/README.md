@@ -18,37 +18,39 @@ Both sides share a **slug** — a short key that ties an upload to its download 
         │      (the uploader)     │         │     (the consumer)      │
         └───────────┬─────────────┘         └────────────┬────────────┘
                     │                                     │
-   GET  /yours/@<slug>  → upload form                     │
-   POST /yours/@<slug>  → store image          GET /mine/@<slug> → image bytes
+   GET  /yours/@<slug>        → editor page               │
+   POST /yours/@<slug>/raw    → store source     GET /mine/@<slug> → processed output
+   PUT  /yours/@<slug>/pipeline → save steps              │
                     │                                     │
                     ▼                                     ▼
         ┌──────────────────────────────────────────────────────────┐
         │              jerrypic-upload (Express, :3000)             │
-        │   one image per slug, stored on a mounted disk volume     │
+        │   raw source + a transform pipeline, per slug, on disk    │
         └──────────────────────────────────────────────────────────┘
 ```
 
-The slug is the only shared secret. Knowing it is enough to upload to and
-download from that slot.
+Each slug holds a **raw source image** plus a **pipeline** of image transforms.
+`/mine/@<slug>` serves the source run through that pipeline — that is the URL the
+Kindle fetches. The slug is the only shared secret.
 
 ---
 
 ## Routes
 
-| Method | Path            | Purpose                                                                  |
-| ------ | --------------- | ------------------------------------------------------------------------ |
-| `GET`  | `/yours/@:slug` | Human-facing HTML page with an upload form; previews the current image.  |
-| `POST` | `/yours/@:slug` | Store an image for this slug. Latest upload overwrites the previous.     |
-| `GET`  | `/mine/@:slug`  | Return the stored image as-is (the URL the Kindle fetches). 404 if none. |
-| `GET`  | `/mine/@:slug/kindle` | Return the stored image converted to the Kindle JPEG (portrait). 404 if none. |
-| `GET`  | `/mine/@:slug/hash` | Return the SHA-256 of the stored image bytes as plain hex. 404 if none. |
+| Method | Path                       | Purpose                                                                       |
+| ------ | -------------------------- | ----------------------------------------------------------------------------- |
+| `GET`  | `/yours/@:slug`            | The editor page: source preview, the pipeline editor, and the output preview. |
+| `POST` | `/yours/@:slug/raw`        | Store the raw source image for this slug. Latest upload wins.                  |
+| `GET`  | `/yours/@:slug/raw`        | Return the raw, as-uploaded source bytes. 404 if none.                         |
+| `PUT`  | `/yours/@:slug/pipeline`   | Save the slug's transform pipeline (JSON step array). Returns the normalized steps. |
+| `GET`  | `/mine/@:slug`             | Return the source run through the pipeline (what the Kindle fetches). 404 if none.  |
+| `GET`  | `/mine/@:slug/hash`        | SHA-256 covering the source **and** the pipeline, as plain hex. 404 if none.   |
 
-### Upload (`POST /yours/@:slug`)
+### Upload (`POST /yours/@:slug/raw`)
 
-Accepts **either**:
-
-- a multipart form upload (field name `image`) — used by the HTML form, or
-- a raw `image/*` request body — used by a web service pushing bytes directly.
+Send the raw image bytes as the request body (any `Content-Type`). JPEG and PNG
+are supported; other formats (AVIF/HEIC/WebP) are stored but can't be processed,
+so `/mine` returns `415`.
 
 ### Slugs
 
@@ -62,21 +64,35 @@ Accepts **either**:
 
 ---
 
+## Pipeline
+
+The output is produced by an ordered list of **steps**, edited on the page and
+stored per slug. The last step is always the **target format** (default JPEG).
+
+- Available transforms: `resize`, `rotate`, `flip`, `crop`, `autocrop`,
+  `greyscale`, `invert`, `contrast`, `brightness`, `normalize`, `threshold`,
+  `dither`, plus the `format` target.
+- A new slug defaults to `greyscale → rotate(-90) → jpeg`. Everything the Kindle
+  needs (e.g. a resize to the device resolution) is added as editable steps —
+  nothing is hardcoded.
+- The server validates every saved pipeline against the step registry: unknown
+  step types are dropped, parameters are coerced/clamped, and a single target
+  step is guaranteed. The editor builds its UI from the same registry
+  (`/yours/@:slug` injects the catalog), so frontend and backend never drift.
+- Steps run with [Jimp](https://github.com/jimp-dev/jimp); it decodes
+  JPEG/PNG/BMP/GIF/TIFF only.
+
 ## Storage
 
-- **Local disk volume**, one current image per slug (latest upload wins).
-- Image bytes live under `DATA_DIR` (default `/data`), with a small sidecar
-  recording the MIME type so downloads return the correct `Content-Type`.
-- `/mine/@:slug` serves the **raw, as-uploaded** bytes — no Kindle-side
-  conversion (grayscale/resize) is done here. The uploader is responsible for
-  providing a Kindle-friendly format if needed.
-- `/mine/@:slug/kindle` serves the same image **converted on the fly** to the
-  JPEG the device expects: resized to 1024×758 and rotated -90° so it lands
-  portrait (758×1024), matching the AWS `convert-for-kual` pipeline. The Kindle's
-  `grayscale_jpeg_decode` tool reads the JPEG luminance plane, so the screen
-  renders grayscale. Conversion is done per request (the raw upload is unchanged).
-- `/mine/@:slug/hash` serves the **SHA-256** of the stored bytes as plain hex, so
-  the Kindle can poll cheaply and skip re-downloading when the image is unchanged.
+- **Local disk volume**, one source image + sidecar per slug.
+- Bytes live under `DATA_DIR` (default `/data`). The JSON sidecar records the
+  `contentType`, the source `hash`, the raw `width`/`height` (so the editor can
+  default a resize to the source size), and the `pipeline`.
+- `/mine/@:slug` renders **per request**; the raw upload is never modified, and
+  re-uploading a photo keeps the configured pipeline.
+- `/mine/@:slug/hash` is computed from the source hash + pipeline definition
+  (no render), so the Kindle can poll cheaply and re-download only when the photo
+  **or** the steps change.
 
 ---
 
@@ -94,14 +110,15 @@ No database and no external credentials are required.
 
 ## Tech stack
 
-| Component     | Choice                         |
-| ------------- | ------------------------------ |
-| Runtime       | Node.js 20 (`node:20-alpine`)  |
-| Framework     | Express 4                      |
-| Uploads       | Multer (multipart) + raw body  |
-| Storage       | Mounted Docker volume on disk  |
-| Container     | Docker + Docker Compose        |
-| Reverse proxy | Caddy (from the hosting stack) |
+| Component     | Choice                          |
+| ------------- | ------------------------------- |
+| Runtime       | Node.js 22 (`node:22-alpine`)   |
+| Framework     | Express 5                       |
+| Uploads       | Raw request body                |
+| Image engine  | Jimp (pure JS, no native deps)  |
+| Storage       | Mounted Docker volume on disk   |
+| Container     | Docker + Docker Compose         |
+| Reverse proxy | Caddy (from the hosting stack)  |
 
 ---
 
