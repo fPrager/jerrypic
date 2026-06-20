@@ -63,21 +63,22 @@ const outputPanel = ({ hasImage, outputUrl }: { hasImage: boolean; outputUrl: st
         </div>
       </section>`
 
-// The pipeline editor between the panels: an arrow in from the top, the step
-// cards (filled in by app.js), an add control, and an arrow out to the right.
-const arrowDown = `<svg class="flow__svg flow__svg--down" viewBox="0 0 40 44" fill="none" stroke="#c0562b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4 V34" /><path d="M9 25 L20 36 L31 25" /></svg>`
-const arrowRight = `<svg class="flow__svg flow__svg--right" viewBox="0 0 56 40" fill="none" stroke="#c0562b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20 H46" /><path d="M35 9 L48 20 L35 31" /></svg>`
+// The pipeline editor between the panels. Two hand-drawn, elbowed arrows: one
+// comes in from the left and bends down into the pipe, the other drops down and
+// bends right out to the output. Wobbly paths give them a scribbled, marker feel.
+const arrowInLeftDown = `<svg class="flow__svg flow__svg--down" viewBox="0 0 64 54" fill="none" stroke="#c0562b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9 C 13 5 20 13 28 9 C 35 6 33 17 35 23 C 37 30 35 37 37 43 C 37.6 46 37 48 37.5 50" /><path d="M29 41 C 32 45 35 47 37.5 51 C 40 47 43 45 46 41" /></svg>`
+const arrowOutDownRight = `<svg class="flow__svg flow__svg--right" viewBox="0 0 64 54" fill="none" stroke="#c0562b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4 C 11 13 18 19 15 26 C 12 33 23 31 30 33 C 37 35 45 32 52 34 C 55 34.7 57 34 59 34.5" /><path d="M50 26 C 54 29 56 31 60 34 C 56 37 54 39 51 42" /></svg>`
 
 const pipeEditor = (): string => `
       <div class="flow">
-        <div class="flow__arrow flow__arrow--in" aria-hidden="true">${arrowDown}</div>
+        <div class="flow__arrow flow__arrow--in" aria-hidden="true">${arrowInLeftDown}</div>
         <div class="pipe" id="pipe"></div>
+        <p class="pipe__status" id="pipe-status" aria-live="polite"></p>
         <div class="pipe__add">
           <select class="pipe__select" id="add-step" aria-label="Add a step"></select>
           <button class="pipe__addbtn" id="add-step-btn" type="button">+ add</button>
         </div>
-        <p class="pipe__status" id="pipe-status" aria-live="polite"></p>
-        <div class="flow__arrow flow__arrow--out" aria-hidden="true">${arrowRight}</div>
+        <div class="flow__arrow flow__arrow--out" aria-hidden="true">${arrowOutDownRight}</div>
       </div>`
 
 // Serialize the editor state for the client. Escape "<" so the JSON can't break out of the script tag.
@@ -289,9 +290,10 @@ const renderYoursPage = ({
         flex-direction: column;
         gap: 0.6rem;
       }
-      .flow__arrow { display: flex; justify-content: center; }
-      .flow__svg { width: 40px; height: auto; display: block; }
-      .flow__svg--right { width: 52px; }
+      .flow__arrow { display: flex; }
+      .flow__arrow--in { justify-content: flex-start; padding-left: 0.5rem; }
+      .flow__arrow--out { justify-content: flex-end; padding-right: 0.5rem; }
+      .flow__svg { width: 60px; height: auto; display: block; }
 
       .pipe { display: flex; flex-direction: column; gap: 0.5rem; }
       .step {
@@ -356,10 +358,12 @@ const renderYoursPage = ({
       .pipe__addbtn:hover { background: #a8491f; }
       .pipe__status { margin: 0; min-height: 1rem; text-align: center; font-size: 0.72rem; color: #8a8170; }
 
-      /* Stack vertically on narrow screens; the output arrow then points down. */
+      /* Stack vertically on narrow screens; center the arrows and point the output down. */
       @media (max-width: 820px) {
         .stage { flex-direction: column; align-items: stretch; }
         .flow { flex-basis: auto; }
+        .flow__arrow--in,
+        .flow__arrow--out { justify-content: center; padding: 0; }
         .flow__svg--right { transform: rotate(90deg); }
       }
     </style>
