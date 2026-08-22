@@ -46,6 +46,8 @@ Kindle fetches. The slug is the only shared secret.
 | `GET`  | `/mine/@:slug`             | Return the source run through the pipeline (what the Kindle fetches). 404 if none.  |
 | `GET`  | `/mine/@:slug/hash`        | SHA-256 covering the source **and** the pipeline, as plain hex. 404 if none.   |
 
+Both `/mine` routes accept an optional `?w=<px>&h=<px>` — see [Requesting a size](#requesting-a-size).
+
 ### Upload (`POST /yours/@:slug/raw`)
 
 Send the raw image bytes as the request body (any `Content-Type`). JPEG and PNG
@@ -64,12 +66,37 @@ so `/mine` returns `415`.
 
 ---
 
+## Requesting a size
+
+A consumer that knows its own display can ask for output already scaled to it,
+instead of the size having to be pinned per device in the stored pipeline:
+
+```
+GET /mine/@<slug>?w=758&h=1024
+GET /mine/@<slug>/hash?w=758&h=1024
+```
+
+The dimensions are appended to the slug's pipeline as a `fill` step, inserted
+just before the target format step. `fill` scales and centre-crops to cover the
+requested box exactly, so the output always fills the display without distorting
+the picture — the overflow on the longer axis is cropped.
+
+Both routes take the parameters, and the requested size feeds the hash, so a
+client polling `/hash?w=&h=` sees a new digest whenever the photo, the steps, or
+its own requested size change. Omitting the parameters leaves both the output and
+the hash exactly as they were.
+
+Values must be whole pixels in `1..10000`; anything else (or only one of the two)
+is ignored and the stored pipeline is served unchanged.
+
+---
+
 ## Pipeline
 
 The output is produced by an ordered list of **steps**, edited on the page and
 stored per slug. The last step is always the **target format** (default JPEG).
 
-- Available transforms: `resize`, `rotate`, `flip`, `crop`, `autocrop`,
+- Available transforms: `resize`, `fill`, `rotate`, `flip`, `crop`, `autocrop`,
   `greyscale`, `invert`, `contrast`, `brightness`, `normalize`, `threshold`,
   `dither`, plus the `format` target.
 - A new slug defaults to `greyscale → rotate(-90) → jpeg`. Everything the Kindle
