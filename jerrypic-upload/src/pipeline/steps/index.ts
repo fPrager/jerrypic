@@ -1,5 +1,6 @@
 import type { StepDefinition } from '../types.js'
 import resize from './resize.js'
+import fill from './fill.js'
 import rotate from './rotate.js'
 import flip from './flip.js'
 import crop from './crop.js'
@@ -16,6 +17,7 @@ import format from './format.js'
 // Order here is the order shown in the editor's "add step" picker.
 export const STEP_LIST: readonly StepDefinition[] = [
   resize,
+  fill,
   rotate,
   flip,
   crop,

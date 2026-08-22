@@ -4,7 +4,7 @@ import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
 import { generateSlug, isValidSlug, SLUG_MAX_LENGTH, SLUG_MIN_LENGTH } from './slug/index.js'
 import { getOutputHash, imageExists, loadImage, loadMeta, loadPipeline, saveImage, savePipeline } from './storage/index.js'
-import { applyPipeline, getCatalog } from './pipeline/index.js'
+import { applyPipeline, buildSizedPipeline, getCatalog, parseRequestedSize } from './pipeline/index.js'
 import renderYoursPage from './renderYoursPage.js'
 
 const MAX_BYTES = Number(process.env.MAX_BYTES) || 26214400
@@ -107,7 +107,8 @@ const createApp = () => {
     // Jimp can only decode JPEG/PNG/BMP/GIF/TIFF — an unsupported upload (e.g. a
     // phone HEIC/WebP) throws here. Surface a clear error instead of a silent 500.
     try {
-      const { buffer, contentType } = await applyPipeline(image.data, await loadPipeline(slug))
+      const pipeline = buildSizedPipeline(await loadPipeline(slug), parseRequestedSize(req.query))
+      const { buffer, contentType } = await applyPipeline(image.data, pipeline)
       res.set('Cache-Control', 'no-store')
       res.type(contentType).send(buffer)
     } catch (error) {
@@ -123,7 +124,7 @@ const createApp = () => {
   // sidecar (no render), so the Kindle can poll it cheaply and re-download when
   // either the photo or the steps change.
   app.get('/mine/@:slug/hash', requireValidSlug, async (req, res) => {
-    const hash = await getOutputHash(first(req.params.slug) as string)
+    const hash = await getOutputHash(first(req.params.slug) as string, parseRequestedSize(req.query))
     if (!hash) {
       res.status(404).json({ error: 'no image uploaded for this slug yet' })
       return
